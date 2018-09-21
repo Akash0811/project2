@@ -10,6 +10,7 @@ function load(){
     for (i =0 ; i<data.title.length ; i++){
       const li = document.createElement('li');
       li.innerHTML = `${data.title[i]}`;
+      li.classList.toggle("message_list");
       document.querySelector('#messages').append(li);
     }
   });
@@ -92,11 +93,12 @@ document.addEventListener('DOMContentLoaded', () => {
       for (i =0 ; i<data.title.length ; i++){
         const li = document.createElement('li');
         li.innerHTML = `${data.title[i]}`;
+        li.classList.toggle("message_list");
         document.querySelector('#messages').append(li);
       }
     });
   }
-  current_channel();
+  //current_channel();
 
   // Create messages for different channels
 
@@ -119,7 +121,9 @@ document.addEventListener('DOMContentLoaded', () => {
     for (i =0 ; i<data.title.length ; i++){
       const li = document.createElement('li');
       li.innerHTML = `${data.title[i]}`;
+      li.classList.toggle("message_list");
       document.querySelector('#messages').append(li);
+      new_message();
     }
   });
 
@@ -140,5 +144,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
   }
+
+  //create listener for new message
+  function new_message(){
+    document.querySelectorAll('li.message_list').forEach(li => {
+      li.onclick = () => {
+      };
+
+    });
+
+  };
+
+
+    // alert item in local storage and communicate with server for messages
+    var socket3 = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+    socket3.on('connect', () => {
+      document.querySelectorAll('li.message_list').forEach(li => {
+        li.onclick = () => {
+          const channel = document.querySelector('#channel_title').innerHTML;
+          let message = li.innerHTML;
+          console.log(message);
+          socket3.emit('delete message', {'channel_title': channel , 'message': message});
+        };
+
+      });
+    });
+
+    //receives messages from server
+    socket3.on('load messages', data => {
+      document.querySelector('#messages').innerHTML="";
+      for (i =0 ; i<data.title.length ; i++){
+        const li = document.createElement('li');
+        li.innerHTML = `${data.title[i]}`;
+        li.classList.toggle("message_list");
+        document.querySelector('#messages').append(li);
+      }
+    });
+
 
 });

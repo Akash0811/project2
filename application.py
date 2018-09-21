@@ -57,3 +57,19 @@ def load(data):
     rest = { "title": prev_messages }
     #print(rest["title"])
     emit("load list", rest , broadcast=True)
+
+@socketio.on("delete message")
+def delete(data):
+    # listens to loading of page and takes in channel title from local storage
+    # broadcasts info of messages
+    #print(channels)
+    channel_title = data["channel_title"]
+    message = data["message"]
+    messages = channels[channel_title]
+    for msg in messages:
+        if msg == message :
+            messages.remove(msg)
+    channels[channel_title] = messages
+    rest = { "title": messages }
+    #print(rest["title"])
+    emit("load messages", rest , broadcast=True)
