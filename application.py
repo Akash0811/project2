@@ -10,18 +10,19 @@ socketio = SocketIO(app)
 
 channels = {}
 
-channel_title_global = ''
-
 def apology(message, code=400):
     """Render message as an apology to user."""
     return render_template("apology.html", top=code, bottom=escape(message)), code
 
 @app.route("/")
 def index():
-    return render_template("index.html" ,chan = channel_title_global , channels = channels)
+    #remembers messages and maps channels
+    return render_template("index.html" , channels = channels)
 
 @socketio.on("submit channel")
 def channel(data):
+    # listens to creation of new channel
+    # broadcasts new channel
     title = data["channel_name"]
     if title in channels:
         return apology("Name already assigned to other channel",400)
@@ -30,25 +31,27 @@ def channel(data):
     emit("channel list", rest , broadcast=True)
 
 @socketio.on("submit message")
+    # listens to creation of new messages
+    # broadcasts new messages
 def message(data):
-    channel_title_global = data["channel_title"]
     channel_title = data["channel_title"]
     message = data["message"]
     name = data["name"]
-    #print(message)
     timestamp = datetime.datetime.now()
     string = f"{name}"+" :: "f"{timestamp}" + " :: " + f"{message}"
     prev_messages = channels[channel_title]
+    if len(prev_messages) == 100:
+        prev_messages = prev_messages[1:]
     prev_messages.append( string )
     channels[channel_title] = prev_messages
     rest = { "title": prev_messages }
-    #print(channels)
     emit("message list", rest , broadcast=True)
 
 @socketio.on("load channel")
 def load(data):
+    # listens to loading of page and takes in channel title from local storage
+    # broadcasts info of messages
     #print(channels)
-    channel_title_global = data["channel_title"]
     channel_title = data["channel_title"]
     prev_messages = channels[channel_title]
     rest = { "title": prev_messages }
