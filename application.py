@@ -62,13 +62,14 @@ def load(data):
 def delete(data):
     # listens to loading of page and takes in channel title from local storage
     # broadcasts info of messages
-    #print(channels)
+    print("hi")
     channel_title = data["channel_title"]
     message = data["message"]
     messages = channels[channel_title]
     for msg in messages:
         if msg == message :
             messages.remove(msg)
+            break
     channels[channel_title] = messages
     rest = { "title": messages }
     #print(rest["title"])

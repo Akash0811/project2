@@ -1,8 +1,10 @@
+
 // load messages specifc to channel
 function load(){
   var socket0 = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
   socket0.on('connect', () => {
     const channel_title = localStorage.getItem('channel_title');
+    document.querySelector('#channel_title').innerHTML = localStorage.getItem('channel_title');
     socket0.emit('load channel', {'channel_title': channel_title});
   });
   socket0.on('load list', data => {
@@ -29,7 +31,7 @@ else{
   load();
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function eventHandler() {
   // Load current value of  display_name
   document.querySelector('#name').innerHTML = localStorage.getItem('name');
 
@@ -62,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     li.innerHTML = `${data.title}`;
     li.classList.toggle("list");
     document.querySelector('#channels').append(li);
-    new_channel()
+    new_channel();
   });
 
 
@@ -78,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('li.list').forEach(li => {
         li.onclick = () => {
           let channel_title = li.innerHTML;
-
           localStorage.setItem('channel_title', channel_title);
           document.querySelector('#channel_title').innerHTML = localStorage.getItem('channel_title');
           socket0.emit('load channel', {'channel_title': channel_title});
@@ -95,10 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
         li.innerHTML = `${data.title[i]}`;
         li.classList.toggle("message_list");
         document.querySelector('#messages').append(li);
-      }
+        li.addEventListener('click', delete_message, false);
+      };
     });
   }
-  //current_channel();
+  current_channel();
 
   // Create messages for different channels
 
@@ -123,11 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
       li.innerHTML = `${data.title[i]}`;
       li.classList.toggle("message_list");
       document.querySelector('#messages').append(li);
-      new_message();
-    }
+      li.addEventListener('click', delete_message, false);
+    };
   });
 
-  //create listener for new channel
+  //adds event listener for new channel
   function new_channel(){
     // reset messages
     document.querySelector('#messages').innerHTML="";
@@ -143,29 +145,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
-  }
-
-  //create listener for new message
-  function new_message(){
-    document.querySelectorAll('li.message_list').forEach(li => {
-      li.onclick = () => {
-      };
-
-    });
-
   };
 
+  /*function new_message(){
+    // add listener to message
+    document.querySelectorAll('li.message_list').forEach(li => {
+      li.onclick = () => {
+        console.log("hi")
+        const channel = document.querySelector('#channel_title').innerHTML;
+        let message = li.innerHTML;
+        li.parentNode.removeChild(li);
+        socket3.emit('delete message', {'channel_title': channel , 'message': message});
+      };
+    });
+  };*/
 
-    // alert item in local storage and communicate with server for messages
+    // create delete event listener and communicate with server for messages if clicked
     var socket3 = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
+    function delete_message(message){
+      console.log("hi");
+      const channel = document.querySelector('#channel_title').innerHTML;
+      //let message = li.innerHTML;
+      msg = message.explicitOriginalTarget.data
+      console.log(msg);
+      //li.parentNode().removeChild(li);
+      socket3.emit('delete message', {'channel_title': channel , 'message': msg});
+    };
+
     socket3.on('connect', () => {
       document.querySelectorAll('li.message_list').forEach(li => {
-        li.onclick = () => {
-          const channel = document.querySelector('#channel_title').innerHTML;
-          let message = li.innerHTML;
-          console.log(message);
-          socket3.emit('delete message', {'channel_title': channel , 'message': message});
-        };
+        li.onclick = delete_message(li.innerHTML);
 
       });
     });
@@ -178,8 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
         li.innerHTML = `${data.title[i]}`;
         li.classList.toggle("message_list");
         document.querySelector('#messages').append(li);
+        li.addEventListener('click', delete_message, false);
       }
     });
-
 
 });
